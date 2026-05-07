@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Indentation Converter</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #1e293b;
+            background: #111827;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            color: #94a3b8;
+        }
+
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            background: #111827;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+        }
+
+        .controls label {
+            font-weight: bold;
+        }
+
+        select,
+        input,
+        button {
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        button {
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            background: #334155;
+        }
+
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 500px;
+            resize: vertical;
+            background: #020617;
+            color: #e2e8f0;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            tab-size: 4;
+            white-space: pre;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .panel h2 {
+            margin: 0;
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            border-top: 1px solid #1e293b;
+            background: #111827;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 900px) {
+            .editor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🧠 Indentation Converter</h1>
+    <p>Convert tabs ↔ spaces while preserving indentation structure.</p>
+</header>
+
+<main>
+
+    <div class="controls">
+
+        <label for="convertType">Conversion:</label>
+
+        <select id="convertType">
+            <option value="tabsToSpaces">Tabs → Spaces</option>
+            <option value="spacesToTabs">Spaces → Tabs</option>
+        </select>
+
+        <label for="spaceCount">Spaces per tab:</label>
+
+        <input
+            type="number"
+            id="spaceCount"
+            min="1"
+            max="16"
+            value="4"
+        />
+
+        <button id="convertBtn">
+            Convert
+        </button>
+
+        <button id="copyBtn">
+            Copy Output
+        </button>
+
+        <button id="clearBtn">
+            Clear
+        </button>
+
+    </div>
+
+    <div class="editor-grid">
+
+        <div class="panel">
+            <h2>Input</h2>
+
+            <textarea
+                id="inputText"
+                placeholder="Paste your code/text here..."
+            ></textarea>
+        </div>
+
+        <div class="panel">
+            <h2>Output</h2>
+
+            <textarea
+                id="outputText"
+                placeholder="Converted output..."
+                readonly
+            ></textarea>
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+    © <span id="currentYear"></span> safesploit
+</footer>
+
+<script>
+    // Global Variables
+    const INPUT_TEXT = document.getElementById('inputText');
+    const OUTPUT_TEXT = document.getElementById('outputText');
+    const CONVERT_TYPE = document.getElementById('convertType');
+    const SPACE_COUNT = document.getElementById('spaceCount');
+
+    const CONVERT_BTN = document.getElementById('convertBtn');
+    const COPY_BTN = document.getElementById('copyBtn');
+    const CLEAR_BTN = document.getElementById('clearBtn');
+
+    /**
+     * Convert tabs to spaces
+     * @param {string} text
+     * @param {number} spacesPerTab
+     * @returns {string}
+     */
+    function tabsToSpaces(text, spacesPerTab) {
+        const spaces = ' '.repeat(spacesPerTab);
+        return text.replace(/\t/g, spaces);
+    }
+
+    /**
+     * Convert spaces to tabs
+     * @param {string} text
+     * @param {number} spacesPerTab
+     * @returns {string}
+     */
+    function spacesToTabs(text, spacesPerTab) {
+        const regex = new RegExp(` {${spacesPerTab}}`, 'g');
+        return text.replace(regex, '\t');
+    }
+
+    /**
+     * Main conversion handler
+     */
+    function convertIndentation() {
+
+        const input = INPUT_TEXT.value;
+        const spacesPerTab = parseInt(SPACE_COUNT.value, 10);
+
+        let output = '';
+
+        if (CONVERT_TYPE.value === 'tabsToSpaces') {
+            output = tabsToSpaces(input, spacesPerTab);
+        } else {
+            output = spacesToTabs(input, spacesPerTab);
+        }
+
+        OUTPUT_TEXT.value = output;
+    }
+
+    /**
+     * Copy output to clipboard
+     */
+    async function copyOutput() {
+
+        try {
+            await navigator.clipboard.writeText(OUTPUT_TEXT.value);
+
+            COPY_BTN.textContent = 'Copied!';
+
+            setTimeout(() => {
+                COPY_BTN.textContent = 'Copy Output';
+            }, 1500);
+
+        } catch (error) {
+            alert('Failed to copy text.');
+        }
+    }
+
+    /**
+     * Clear both text areas
+     */
+    function clearTextAreas() {
+        INPUT_TEXT.value = '';
+        OUTPUT_TEXT.value = '';
+    }
+
+    /**
+     * Bind event listeners
+     */
+    function bindEvents() {
+        CONVERT_BTN.addEventListener('click', convertIndentation);
+        COPY_BTN.addEventListener('click', copyOutput);
+        CLEAR_BTN.addEventListener('click', clearTextAreas);
+    }
+
+    // Function to dynamically set the current year in the footer
+    function setCurrentYear() {
+        const yearElement = document.getElementById('currentYear');
+
+        if (yearElement) {
+            yearElement.textContent = new Date().getFullYear();
+        }
+    }
+
+    /**
+     * Initialise application
+     */
+    function init() {
+        bindEvents();
+        setCurrentYear();
+    }
+
+    init();
+</script>
+
+</body>
+</html>
