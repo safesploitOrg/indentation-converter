@@ -143,7 +143,7 @@
 <body>
 
 <header>
-    <h1>🧠 Indentation Converter</h1>
+    <h1>Indentation Converter</h1>
     <p>Convert tabs ↔ spaces while preserving indentation structure.</p>
 </header>
 
@@ -154,8 +154,8 @@
         <label for="convertType">Conversion:</label>
 
         <select id="convertType">
-            <option value="tabsToSpaces">Tabs → Spaces</option>
             <option value="spacesToTabs">Spaces → Tabs</option>
+            <option value="tabsToSpaces">Tabs → Spaces</option>
         </select>
 
         <label for="spaceCount">Spaces per tab:</label>
@@ -168,7 +168,8 @@
             value="4"
         />
 
-        <button id="convertBtn">
+        <!-- Auto-convert button (hidden) -->
+        <button id="convertBtn" style="display:none;">
             Convert
         </button>
 
@@ -297,6 +298,12 @@
      * Bind event listeners
      */
     function bindEvents() {
+        // Auto-convert on input
+        INPUT_TEXT.addEventListener('input', convertIndentation);
+        CONVERT_TYPE.addEventListener('change', convertIndentation);
+        SPACE_COUNT.addEventListener('change', convertIndentation);
+
+        // Manual button controls
         CONVERT_BTN.addEventListener('click', convertIndentation);
         COPY_BTN.addEventListener('click', copyOutput);
         CLEAR_BTN.addEventListener('click', clearTextAreas);
